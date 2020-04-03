@@ -1,0 +1,13 @@
+# teste 06
+
+insert_end  0 1 2 3  4  5  6 7 8 9
+print
+delete_pos  4
+print
+delete_pos  0
+print_0
+delete_pos  7
+print_end
+print
+
+delete_pos  70
