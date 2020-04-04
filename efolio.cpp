@@ -181,7 +181,7 @@ class LISTA{
         }
 
         //Inserir Depois do No recebido e atualiza quantidade de elementos
-        bool inserirDepois(int valor, NO_LISTA<int> * no){
+        bool inserirPosicao(int valor, int pos){
             NO_LISTA<int> * novo = new NO_LISTA<int>(valor); //Cria novo No com o valor recebido
             //Se Lista Vazia
             if(cauda==nullptr){
@@ -191,10 +191,16 @@ class LISTA{
                 incrementaLista();
                 return true;
             }
+            if(pos == 0){
+                return inserirCabeca(valor);
+            } else if(pos == tamanho-1){
+                return inserirCauda(valor);
+            }
             //Se não estiver Vazio
             else{
-                novo->atualizaProximo(no->obterProximo());
-                no->atualizaProximo(novo);
+                NO_LISTA<int> * temp=procuraAnteriorPosicao(pos);
+                novo->atualizaProximo(temp->obterProximo());
+                temp->atualizaProximo(novo);
                 incrementaLista();
                 if(valor>maximo)
                     maximo=valor;//Atualiza valor Maximo da lista
@@ -213,7 +219,7 @@ class LISTA{
                 NO_LISTA<int> * temp = cauda->obterProximo();
                 cauda->atualizaProximo(temp->obterProximo());
                 decrementaLista();
-                if(temp->obterElemento()==maximo){
+                if(temp->obterElemento()==maximo && tamanho>0){
                     atualizarMaximo();
                 }
                 delete(temp);
@@ -248,6 +254,11 @@ class LISTA{
         bool remover(int pos){
             if(pos>=tamanho || pos <0 || cauda == nullptr){
                 return false; //Se posição inválida ou lista vazia retorna false
+            }
+            if(pos == 0){
+                return removerCabeca();
+            } else if(pos == tamanho-1){
+                return removerCauda();
             }
             //Apagar no na posição recebida
             else{
@@ -337,6 +348,47 @@ class LISTA{
                 }
             }
             return texto;
+        }
+
+        bool inverter(int pos1, int pos2){
+            try{
+                if(tamanho==0){
+                    throw ERRLIST();
+                }
+                if(pos1<0 || pos1 >=tamanho){
+                    throw ERRARG();
+                }
+                if(pos2<0 || pos2 >=tamanho){
+                    throw ERRARG();
+                }
+                if(pos1 > pos2){
+                    int aux=pos1;
+                    pos1=pos2;
+                    pos2=aux;
+                }
+                if(tamanho>0){
+                    LISTA * temp = new LISTA();
+                    for(int i= pos1; i <= pos2; i++){
+                        NO_LISTA<int> * noTemp = procuraAnteriorPosicao(pos1);
+                        NO_LISTA<int> * aux= noTemp->obterProximo();
+                        temp->inserirCabeca(aux->obterElemento());
+                        this->remover(pos1);
+                    }
+                    for(int i= 0; i <= pos2-pos1; i++){
+                        NO_LISTA<int> * noTemp = temp->procuraAnteriorPosicao(0);
+                        NO_LISTA<int> * aux= noTemp->obterProximo();
+                        this->inserirPosicao(aux->obterElemento(),pos1-1+i);
+                        temp->removerCabeca();
+                    }
+                    delete(temp);
+                    return true;
+                }
+                return false;
+            } catch(ERRARG &e){
+                throw e;
+            } catch(ERRLIST &e){
+                throw e;
+            }
         }
 
 };
@@ -498,6 +550,19 @@ class GESTOR_LISTA{
                     return inteiros->listaCompleta();
                 throw ERRLIST();
             }catch(ERRLIST& e){
+                throw e;
+            }
+        }
+
+        bool inverter(int pos1,int pos2){
+            try{
+                if(pos1 > pos2){
+                    return inteiros->inverter(pos2,pos1);
+                }
+                return inteiros->inverter(pos1,pos2);
+            } catch(ERRARG &e){
+                throw e;
+            } catch(ERRLIST &e){
                 throw e;
             }
         }
@@ -663,7 +728,25 @@ class INTERFACE{
             } catch(ERRLIST & e){
                 cout << "Comando " << comando<< ": " << e.what() <<endl;
             }
-            
+        }
+
+        void invert_range(){
+            try{
+                int pos1, pos2;
+                bool res;
+                if(argumentos != " "){
+                    istringstream arg(argumentos);
+                    arg >> pos1;
+                    arg >> pos2;
+                    res = lista->inverter(pos1,pos2);
+                } else{
+                    cout << "Comando " << comando<< ": Posicao invalida!"<<endl;
+                }
+            } catch(ERRARG & e){
+                cout << "Comando " << comando<< ": " << e.what() <<endl;
+            } catch(ERRLIST & e){
+                cout << "Comando " << comando<< ": " << e.what() <<endl;
+            }
         }
 
     public:
@@ -716,7 +799,7 @@ class INTERFACE{
             } else if(comando == "delete_pos"){
                 delete_pos();
             } else if(comando == "invert_range"){
-                cout << 13 <<endl;
+                invert_range();
             } else{
                 cout << "Comando não suportado!" <<endl;
             }
