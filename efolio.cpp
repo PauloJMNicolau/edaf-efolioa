@@ -193,7 +193,7 @@ class LISTA{
             }
             if(pos == 0){
                 return inserirCabeca(valor);
-            } else if(pos == tamanho-1){
+            } else if(pos >= tamanho-1){
                 return inserirCauda(valor);
             }
             //Se não estiver Vazio
@@ -377,7 +377,7 @@ class LISTA{
                     for(int i= 0; i <= pos2-pos1; i++){
                         NO_LISTA<int> * noTemp = temp->procuraAnteriorPosicao(0);
                         NO_LISTA<int> * aux= noTemp->obterProximo();
-                        this->inserirPosicao(aux->obterElemento(),pos1-1+i);
+                        this->inserirPosicao(aux->obterElemento(),pos1+i);
                         temp->removerCabeca();
                     }
                     delete(temp);
