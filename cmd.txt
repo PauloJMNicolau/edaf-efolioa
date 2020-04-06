@@ -1,6 +1,6 @@
 # teste 07
 delete_0
-
+insert_0 1
 insert_end   -1 2
 print
 delete_pos 8

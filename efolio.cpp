@@ -31,7 +31,7 @@ class NO_LISTA{
         //Construtor de Nó da Lista
         NO_LISTA<T>(T valor){
             this->elemento=valor; 
-            proximo = nullptr;
+            proximo = this;
         }
 
         //Construtor por Copia de um Nó da Lista
@@ -181,7 +181,6 @@ class LISTA{
             NO_LISTA<int> * novo = new NO_LISTA<int>(valor); //Cria novo No com o valor recebido
             //Se Lista Vazia
             if(cauda==nullptr){
-                novo->atualizaProximo(novo);
                 cauda=novo;
                 maximo= valor;//Atualiza valor Maximo da lista
                 incrementaLista();
@@ -203,7 +202,6 @@ class LISTA{
             NO_LISTA<int> * novo = new NO_LISTA<int>(valor); //Cria novo No com o valor recebido
             //Se Lista Vazia
             if(cauda==nullptr){
-                novo->atualizaProximo(novo);
                 cauda=novo;
                 maximo= valor;//Atualiza valor Maximo da lista
                 incrementaLista();
@@ -243,7 +241,6 @@ class LISTA{
             NO_LISTA<int> * novo = new NO_LISTA<int>(valor); //Cria novo No com o valor recebido
             //Se Lista Vazia
             if(cauda==nullptr){
-                novo->atualizaProximo(novo);
                 cauda=novo;
                 maximo=valor;//Atualiza valor Maximo da lista
                 incrementaLista();
@@ -487,7 +484,7 @@ class LISTA{
 
 };
 
-
+//Classe que gere a execução dos comandos que estão no ficheiro
 class INTERFACE{
     private:
         LISTA* lista;
