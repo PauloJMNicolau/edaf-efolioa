@@ -5,7 +5,7 @@
 #include <exception>
 
 using namespace std;
-
+//Estrutura de Erros para lista vazia
 struct ERRLIST: public exception{
     const char* what() const throw(){
         return "Lista vazia!";
@@ -13,6 +13,7 @@ struct ERRLIST: public exception{
 
 };
 
+//Estrutura de Erros para posições inválidas
 struct ERRARG: public exception{
     virtual const char* what() const throw(){
         return "Posicao invalida!";
@@ -27,41 +28,45 @@ class NO_LISTA{
         NO_LISTA<T> *proximo; //Elemento Seguinte na Lista
 
     public:
+        //Construtor de Nó da Lista
         NO_LISTA<T>(T valor){
-            this->elemento=valor;
+            this->elemento=valor; 
             proximo = nullptr;
         }
 
+        //Construtor por Copia de um Nó da Lista
         NO_LISTA<T>(NO_LISTA<T> & no){
             this->elemento=no->obterElemento();
             this->proximo=no->obterProximo();
         }
 
+        //Destroi um o nó
         ~NO_LISTA(){
             this->elemento=0;
             proximo=nullptr;
         }
 
-        //Obter referencia do seguinte elemento da lista
+        //Obter elemento seguinte do nó
         NO_LISTA<T>* obterProximo() const{
             return proximo;
         }
 
-        //Obter Elemento
-        int obterElemento() const{
+        //Obter Elemento do nó
+        const int obterElemento() const{
             return elemento;
         }
 
-        //Atualiza elemento seguinte
+        //Atualiza elemento seguinte com o nó fornecido
         void atualizaProximo(NO_LISTA<T> * no){
             proximo=no;
         }
 
-        //Atualiza elemento
+        //Atualiza elemento do nó
         void atualizaElemento(T valor){
             elemento=valor;
         }
 
+        //Comparar nó com outro nó
         bool operator==(const NO_LISTA<T> * no)const{
             return (this == no);
         }
@@ -69,6 +74,7 @@ class NO_LISTA{
 
 
 //Classe que armazena a lista
+//Disponibiliza as funções base da lista (inserir, remover, procurar, inverter, obter elementos)
 class LISTA{
     private:
         NO_LISTA<int> * cauda; //Ultimo Elemento da Lista
@@ -95,25 +101,28 @@ class LISTA{
         void atualizarMaximo(){
             if(tamanho>0){
                 NO_LISTA<int> * temp = cauda->obterProximo();
-                int aux = temp->obterElemento();
+                int aux = temp->obterElemento(); //Coloca a variável com o valor do primeiro elemento da lista
+                //Procura elemento maior da lista
+                //Percorrendo a lista até ao ultimo elemento
                 temp = temp->obterProximo();
                 while(temp!=cauda->obterProximo()){
                     if(aux < temp->obterElemento())
-                        aux= temp->obterElemento();
+                        aux= temp->obterElemento(); //Atualiza variável auxiliar caso o elemento atual seja maior do que o guardado na variável
                     temp = temp->obterProximo();
                 }
-                maximo= aux;
+                maximo= aux; //Atualiza o valor máximo na lista
             }
         }
 
-        //Procura no anterior à posicao fornecida
+        //Procura nó anterior à posicao fornecida
         NO_LISTA<int> * procuraAnteriorPosicao(int pos){
             if(pos>=tamanho || pos<0 || cauda == nullptr){
-                return nullptr;
+                return nullptr; // Se estiver vazio retorna NULL
             }
             if(pos==0)
-                return cauda;
+                return cauda; //Se for a Posição 0 retorna o nó da cauda
             else{
+                //Percorre a lista até à posição anterior à fornecida e retorna esse nó
                 NO_LISTA<int> * temp = cauda;
                 for(int i =0;i<pos;i++)
                     temp = temp->obterProximo();
@@ -121,21 +130,53 @@ class LISTA{
             }
         }
 
-    public:
-
-        LISTA(){
-            cauda = nullptr;
-            tamanho = 0;
-            maximo = INT16_MIN;
+        //Remover no topo da Lista e atualiza quantidade de elementos
+        bool removerCabeca(){
+            try{
+                if(tamanho==0){
+                    throw ERRLIST(); //Erro Lista Vazia
+                }
+                NO_LISTA<int> * temp = cauda->obterProximo();
+                cauda->atualizaProximo(temp->obterProximo());
+                decrementaLista();
+                //Verifica se valor removido era o valor máximo
+                //Caso seja atualiza o valor máximo
+                if(temp->obterElemento()==maximo && tamanho>0){
+                    atualizarMaximo();
+                }
+                delete(temp);
+                return true;
+            } catch(ERRLIST& e){
+                throw e;
+            }
         }
 
-        ~LISTA(){
-            cauda=nullptr;
-            tamanho=0;
-            maximo =INT16_MIN;
+        //Remover no fim da Lista e atualiza quantidade de elementos
+        bool removerCauda(){
+            try{
+                if(tamanho==0){
+                    throw ERRLIST(); //Erro de lista vazia
+                }
+                //Obtem elemento anteiro da lista
+                NO_LISTA<int> * temp = procuraAnteriorPosicao(tamanho-1);
+                NO_LISTA<int> * aux = cauda;
+                //Atualiza nó obtido com o primeiro da lista  
+                temp->atualizaProximo(cauda->obterProximo());
+                cauda = temp; // Atualiza cauda e reduz tamanho da lista
+                decrementaLista();
+                //Verifica se valor removido era o valor máximo
+                //Caso seja atualiza o valor máximo
+                if(aux->obterElemento()==maximo){
+                    atualizarMaximo();
+                }
+                delete(aux);
+                return true;
+            } catch(ERRLIST& e){
+                throw e;
+            }
         }
 
-        //Inserir elemento no topo da Lista e atualiza quantidade de elementos
+         //Inserir elemento no topo da Lista e atualiza quantidade de elementos
         bool inserirCabeca(int valor){
             NO_LISTA<int> * novo = new NO_LISTA<int>(valor); //Cria novo No com o valor recebido
             //Se Lista Vazia
@@ -180,7 +221,24 @@ class LISTA{
             }
         }
 
-        //Inserir Depois do No recebido e atualiza quantidade de elementos
+    public:
+        //Construtor de Lista vazia
+        LISTA(){
+            cauda = nullptr;
+            tamanho = 0;
+            maximo = INT16_MIN;//Coloca o valor máximo com o valor minimo que o inteiro de 16bit suporta
+        }
+
+        //Destroi Lista
+        ~LISTA(){
+            if(tamanho!=0){
+                while(!listaVazia()){
+                    removerCauda();
+                }
+            }
+        }
+
+        //Inserir elemento na posição recebida e atualiza quantidade de elementos
         bool inserirPosicao(int valor, int pos){
             NO_LISTA<int> * novo = new NO_LISTA<int>(valor); //Cria novo No com o valor recebido
             //Se Lista Vazia
@@ -191,6 +249,8 @@ class LISTA{
                 incrementaLista();
                 return true;
             }
+            // Verifica se a posição fornecida é a primeira ou a ultima
+            //Caso seja executa a função respetiva
             if(pos == 0){
                 return inserirCabeca(valor);
             } else if(pos >= tamanho-1){
@@ -208,60 +268,23 @@ class LISTA{
             }
         }
 
-        //Remover no topo da Lista e atualiza quantidade de elementos
-        bool removerCabeca(){
-            //Verifica se lista está vazia
-            if(cauda == nullptr){
-                return false;
-            }
-            //Se tiver membros
-            else{
-                NO_LISTA<int> * temp = cauda->obterProximo();
-                cauda->atualizaProximo(temp->obterProximo());
-                decrementaLista();
-                if(temp->obterElemento()==maximo && tamanho>0){
-                    atualizarMaximo();
-                }
-                delete(temp);
-                return true;
-            }
-        }
-
-        //Remover no fim da Lista e atualiza quantidade de elementos
-        bool removerCauda(){
-            //Verifica se lista está vazia
-            if(cauda == nullptr){
-                return false;
-            }
-            //Se tiver membros
-            else{
-                NO_LISTA<int> * temp = cauda->obterProximo();
-                NO_LISTA<int> * aux = cauda;
-                while(temp->obterProximo()!=cauda)
-                    temp = temp->obterProximo();
-                temp->atualizaProximo(cauda->obterProximo());
-                cauda = temp;
-                decrementaLista();
-                if(aux->obterElemento()==maximo){
-                    atualizarMaximo();
-                }
-                delete(aux);
-                return true;
-            }
-        }
-
         //Remover Elementos da Lista e atualiza quantidade de elementos
         bool remover(int pos){
-            if(pos>=tamanho || pos <0 || cauda == nullptr){
-                return false; //Se posição inválida ou lista vazia retorna false
-            }
-            if(pos == 0){
-                return removerCabeca();
-            } else if(pos == tamanho-1){
-                return removerCauda();
-            }
-            //Apagar no na posição recebida
-            else{
+             try{
+                if(tamanho==0){
+                    throw ERRLIST(); //Erro lista vazia
+                }
+                if(tamanho < pos || pos <0){
+                    throw ERRARG(); //Erro de posição inválida
+                }
+                // Verifica se a posição fornecida é a primeira ou a ultima
+                //Caso seja executa a função respetiva
+                if(pos == 0){
+                    return removerCabeca();
+                } else if(pos == tamanho-1){
+                    return removerCauda();
+                }
+                //Apagar no na posição recebida
                 NO_LISTA<int> * aux = procuraAnteriorPosicao(pos);
                 NO_LISTA<int> * temp= aux->obterProximo();
                 aux->atualizaProximo(temp->obterProximo());
@@ -271,6 +294,11 @@ class LISTA{
                 }
                 delete(temp);
                 return true;
+
+            } catch(ERRLIST& e){
+                throw e;
+            } catch(ERRARG& e){
+                throw e;
             }
         }
 
@@ -281,7 +309,13 @@ class LISTA{
 
         //Obter o elemento inicial da Lista
         NO_LISTA<int> * obterCabeca() const{
-            return cauda->obterProximo();
+            try{
+                if(tamanho==0)
+                    throw ERRLIST();
+                return cauda->obterProximo();
+            }catch(ERRLIST& e){
+                throw e;
+            }
         }
 
         //Obter Tamanho da Lista
@@ -293,13 +327,12 @@ class LISTA{
         const int obterMaximo() const{
             try{
                 if(tamanho==0)
-                    throw ERRLIST();
+                    throw ERRLIST(); //Lista Vazia
                 return maximo;
             } catch(ERRLIST & e){
                 throw e;
             }           
         }
-
 
         //Verifica se lista está vazia
         const bool listaVazia(){
@@ -309,58 +342,77 @@ class LISTA{
         //Retorna a posição do primeiro elemento igual ao valor fornecido
         //Se retornar -1 não encontrou elemento
         const int procuraItem(int valor){
-            int posicao= -1;
-            int i=0;
-            NO_LISTA<int> * temp = cauda->obterProximo();
-            while(posicao ==-1 && i< tamanho){
-                if(temp->obterElemento()==valor)
-                    posicao=i;
-                temp = temp->obterProximo();
-                i++;
+            try{
+                if(tamanho==0)
+                    throw ERRLIST(); //Erro lista Vazia
+                int posicao= -1;
+                int i=0;
+                NO_LISTA<int> * temp = cauda->obterProximo();
+                while(posicao ==-1 && i< tamanho){
+                    if(temp->obterElemento()==valor)
+                        posicao=i;
+                    temp = temp->obterProximo();
+                    i++;
+                }
+                return posicao;
+            }catch(ERRLIST& e){
+                throw e;
             }
-            return posicao;
         }
 
         //Retorna Posição do Elemento com o Valor Maximo
-        //Se retornar -1 não encontrou elemento
+        //Se retornar -1 lista está vazia
         const int procuraItem(){
-            int posicao= -1;
-            int i=0;
-            NO_LISTA<int> * temp = cauda->obterProximo();
-            while(posicao ==-1 && i< tamanho){
-                if(temp->obterElemento()==maximo)
-                    posicao=i;
-                temp = temp->obterProximo();
-                i++;
+            try{
+                if(tamanho==0)
+                    throw ERRLIST(); //Erro lista vazia
+                int posicao= -1;     
+                int i=0;
+                NO_LISTA<int> * temp = cauda->obterProximo();
+                while(posicao ==-1 && i< tamanho){
+                    if(temp->obterElemento()==maximo)
+                        posicao=i;
+                    temp = temp->obterProximo();
+                    i++;
+                }
+                return posicao;
+            }catch(ERRLIST& e){
+                throw e;
             }
-            return posicao;
         }
 
         //Gerar uma versão textual dos elementos da lista
         const string listaCompleta(){
-            string texto;
-            if(tamanho>0){
+            try{
+                if(tamanho==0)
+                    throw ERRLIST();
+                string texto;
                 NO_LISTA<int> * temp = obterCabeca();
                 for(int i=0; i<tamanho; i++){
                     texto.append(" ");
                     texto.append(to_string(temp->obterElemento()));
                     temp = temp->obterProximo();
                 }
-            }
-            return texto;
+                return texto;
+            }catch(ERRLIST& e){
+                throw e;
+            }            
         }
 
+        //Inverter elementos da lista entre as posições fornecidas
         bool inverter(int pos1, int pos2){
             try{
                 if(tamanho==0){
-                    throw ERRLIST();
+                    throw ERRLIST(); //Lista Vazia
                 }
                 if(pos1<0 || pos1 >=tamanho){
-                    throw ERRARG();
+                    throw ERRARG(); //Posição 1 Inválida
                 }
                 if(pos2<0 || pos2 >=tamanho){
-                    throw ERRARG();
+                    throw ERRARG(); //Posição 2 Inválida
                 }
+                //Verifica se posições estão trocadas
+                //Caso esteja troca
                 if(pos1 > pos2){
                     int aux=pos1;
                     pos1=pos2;
@@ -368,19 +420,24 @@ class LISTA{
                 }
                 if(tamanho>0){
                     LISTA * temp = new LISTA();
+                    //Cria uma lista temporária com os elementos que se pretende trocar
+                    //Procura o elemento das posições pedidas e insere na lista temporária
                     for(int i= pos1; i <= pos2; i++){
                         NO_LISTA<int> * noTemp = procuraAnteriorPosicao(pos1);
                         NO_LISTA<int> * aux= noTemp->obterProximo();
-                        temp->inserirCabeca(aux->obterElemento());
-                        this->remover(pos1);
+                        //Insere os elementos sempre na cabeça.
+                        //Desta forma os elementos já ficam trocados
+                        temp->inserirCabeca(aux->obterElemento());  
+                        this->remover(pos1); //Remove o elemento da lista principal
                     }
+                    //Copia novamente os elementos já invertidos para a lista principal
                     for(int i= 0; i <= pos2-pos1; i++){
-                        NO_LISTA<int> * noTemp = temp->procuraAnteriorPosicao(0);
-                        NO_LISTA<int> * aux= noTemp->obterProximo();
-                        this->inserirPosicao(aux->obterElemento(),pos1+i);
+                        //Retira sempre da lista temporária o nó da cabeça
+                        //Insere o elemento na lista principal na posição1 incrementada com o valor de i
+                        this->inserirPosicao(temp->obterCabeca()->obterElemento(),pos1+i);
                         temp->removerCabeca();
                     }
-                    delete(temp);
+                    delete(temp); //Apaga a lista temporária
                     return true;
                 }
                 return false;
@@ -391,93 +448,14 @@ class LISTA{
             }
         }
 
-};
-
-//Classe Interface de Gestão da Lista
-class GESTOR_LISTA{
-    private:
-        LISTA * inteiros;
-
-    public:
-
-        GESTOR_LISTA(){
-            inteiros = new LISTA();
-        }
-
-        ~GESTOR_LISTA(){
-            apagarLista();
-            delete(inteiros);
-            inteiros = nullptr;
-        }
-    
-        //Inserir elemento no inicio
-        bool inserirNoInicio(int valor){
-            return inteiros->inserirCabeca(valor);
-        }
-
-        //Inserir elemento no final
-        bool inserirNoFinal(int valor){
-            return inteiros->inserirCauda(valor);
-        }
-
-        //Remover elemento no final
-        const bool removerNoFim(){
-            try{
-                if(inteiros->listaVazia()){
-                    throw ERRLIST();
-                }
-                return inteiros->removerCauda();
-            } catch(ERRLIST& e){
-                throw e;
-            }
-        }
-
-        //Remover elemento no inicio
-        const bool removerNoInicio(){
-            try{
-                if(inteiros->listaVazia()){
-                    throw ERRLIST();
-                }
-                return inteiros->removerCabeca();
-            } catch(ERRLIST& e){
-                throw e;
-            }
-        }
-
-        //Remover elemento na posicao
-        const bool removerNaPosicao(int pos){
-            try{
-                if(inteiros->listaVazia()){
-                    throw ERRLIST();
-                }
-                int tamanho=inteiros->obterTamanho();
-                if(tamanho < pos){
-                    throw ERRARG();
-                }
-                if(pos == 0){
-                    return inteiros->removerCabeca();
-                } else if(pos == tamanho-1){
-                    return inteiros->removerCauda();
-                } else if(pos<inteiros->obterTamanho()){
-                    return inteiros->remover(pos);
-                }
-                return false;
-            } catch(ERRLIST& e){
-                throw e;
-            } catch(ERRARG& e){
-                throw e;
-            }
-        }
-
-
         //Apaga a lista toda
         bool apagarLista(){
             try{
-                if(inteiros->listaVazia()){
-                    throw ERRLIST();
+                if(tamanho==0){
+                    throw ERRLIST(); //Erro Lista Vazia
                 }
-                while(!inteiros->listaVazia()){
-                    inteiros->removerCauda();
+                while(!listaVazia()){
+                    removerCauda();
                 }
                 return true;
             } catch(ERRLIST& e){
@@ -485,26 +463,12 @@ class GESTOR_LISTA{
             }
         }
 
-        //Obter Tamanho da Lista
-        const int obterTamanho() const{
-            return inteiros->obterTamanho();
-        }
-
-        //Obter Maximo da Lista
-        const int obterMaximo() const{
-            try{
-                return inteiros->obterMaximo();
-            } catch(ERRLIST & e){
-                throw e;
-            }
-        }
-
         //Retorna o Valor do Primeiro Item da Lista
         const int obterElementoCabeca() const{
             try{
-                if(!inteiros->listaVazia())
-                    return inteiros->obterCabeca()->obterElemento();
-                throw ERRLIST();
+                if(tamanho==0)
+                    throw ERRLIST(); //Erro lista Vazia
+                return cauda->obterProximo()->obterElemento();
             }catch(ERRLIST& e){
                 throw e;
             }
@@ -513,64 +477,19 @@ class GESTOR_LISTA{
         //Retorna o Valor do Ultimo Item da Lista
         const int obterElementoCauda() const{
             try{
-                if(!inteiros->listaVazia())
-                    return inteiros->obterCauda()->obterElemento();
-                throw ERRLIST();
-            }catch(ERRLIST& e){
-                throw e;
-            }
-        }
-
-        //Retorna Primeira Ocorrencia do elemento igual a "valor"
-        //Se retornar -1 não encontrou elemento
-        const int procuraPrimeiraOcorrencia(int valor){
-            try{
-                if(inteiros->listaVazia())
+                if(tamanho==0)
                     throw ERRLIST();
-                return inteiros->procuraItem(valor);
+                return obterCauda()->obterElemento();
             }catch(ERRLIST& e){
                 throw e;
             }
         }
 
-        //Retorna Primeira Ocorrencia do elemento igual a maximo
-        const int procuraElementoMaximo(){
-            try{
-                if(inteiros->listaVazia())
-                    throw ERRLIST();
-                return inteiros->procuraItem();
-            }catch(ERRLIST& e){
-                throw e;
-            }
-        }
-
-        string obterListaTextual(){
-            try{
-                if(!inteiros->listaVazia())
-                    return inteiros->listaCompleta();
-                throw ERRLIST();
-            }catch(ERRLIST& e){
-                throw e;
-            }
-        }
-
-        bool inverter(int pos1,int pos2){
-            try{
-                if(pos1 > pos2){
-                    return inteiros->inverter(pos2,pos1);
-                }
-                return inteiros->inverter(pos1,pos2);
-            } catch(ERRARG &e){
-                throw e;
-            } catch(ERRLIST &e){
-                throw e;
-            }
-        }
 };
 
 class INTERFACE{
     private:
-        GESTOR_LISTA* lista;
+        LISTA* lista;
         string comando;
         string argumentos;
 
@@ -581,7 +500,7 @@ class INTERFACE{
             if(argumentos != " "){
                 istringstream arg(argumentos);
                 while(arg >> aux){
-                    res = lista->inserirNoInicio(aux);
+                    res = lista->inserirPosicao(aux,0);
                 } 
             } else{
                 cout << "Comando " << comando<< ": Não existem valores a introduzir!"<<endl;
@@ -596,7 +515,7 @@ class INTERFACE{
             if(argumentos != " "){
                 istringstream arg(argumentos);
                 while(arg >> aux){
-                    res = lista->inserirNoFinal(aux);
+                    res = lista->inserirPosicao(aux, lista->obterTamanho());
                 } 
             } else{
                 cout << "Comando " << comando<< ": Não existem valores a introduzir!"<<endl;
@@ -610,7 +529,7 @@ class INTERFACE{
                 int res;
                 res = lista->obterElementoCabeca();
                 cout << "Lista(0)= " << res << endl;
-            }catch(ERRLIST e){ //Caso a lista esteja vazia
+            }catch(ERRLIST e){ //Trata o erro caso a lista esteja vazia
                 cout << "Comando " << comando<< ": " << e.what() <<endl;
             }
         }
@@ -622,7 +541,7 @@ class INTERFACE{
                 int res;
                 res = lista->obterElementoCauda();
                 cout << "Lista(end)= " << res << endl;
-            }catch(ERRLIST e){ //Caso a lista esteja vazia
+            }catch(ERRLIST e){ //Trata o erro caso a lista esteja vazia
                 cout << "Comando " << comando<< ": " << e.what() <<endl;
             }
         }
@@ -632,9 +551,9 @@ class INTERFACE{
             try{
                 int aux;
                 string res;
-                res = lista->obterListaTextual();
+                res = lista->listaCompleta();
                 cout << "Lista=" << res << endl;
-            }catch(ERRLIST e){ //Caso a lista esteja vazia
+            }catch(ERRLIST e){ //Trata o erro caso a lista esteja vazia
                 cout << "Comando " << comando<< ": " << e.what() <<endl;
             }
         }
@@ -642,10 +561,8 @@ class INTERFACE{
         //Executa comando para apagar o primeiro elemento da lista
         void delete_0(){
             try{
-                int aux;
-                bool res;
-                res = lista->removerNoInicio();
-            }catch(ERRLIST e){ //Caso a lista esteja vazia
+                bool res = lista->remover(0);
+            }catch(ERRLIST e){ //Trata o erro caso a lista esteja vazia
                 cout << "Comando " << comando<< ": " << e.what() <<endl;
             }
         }
@@ -653,10 +570,8 @@ class INTERFACE{
         //Executa comando para apagar o ultimo elemento da lista
         void delete_end(){
             try{
-                int aux;
-                bool res;
-                res = lista->removerNoFim();
-            }catch(ERRLIST e){ //Caso a lista esteja vazia
+                bool res = lista->remover(lista->obterTamanho()-1);
+            }catch(ERRLIST e){ //Trata o erro caso a lista esteja vazia
                 cout << "Comando " << comando<< ": " << e.what() <<endl;
             }
         }
@@ -669,10 +584,8 @@ class INTERFACE{
         //Executa comando para apagar toda a lista
         void clear(){
             try{
-                int aux;
-                bool res;
-                res = lista->apagarLista();
-            }catch(ERRLIST e){ //Caso a lista esteja vazia
+                bool res = lista->apagarLista();
+            }catch(ERRLIST e){ //Trata o erro caso a lista esteja vazia
                 cout << "Comando " << comando<< ": " << e.what() <<endl;
             }
         }
@@ -685,7 +598,7 @@ class INTERFACE{
                 if(argumentos != " "){
                     istringstream arg(argumentos);
                     while(arg >> aux){
-                        res = lista->procuraPrimeiraOcorrencia(aux);
+                        res = lista->procuraItem(aux);
                         if(res==-1){ //Caso não encontre o item
                             cout << "Item " << aux << " nao encontrado!" <<endl;
                         }
@@ -694,7 +607,7 @@ class INTERFACE{
                         }
                     }
                 }                 
-            }catch(ERRLIST e){ //Caso a lista esteja vazia
+            }catch(ERRLIST e){ //Trata o erro caso a lista esteja vazia
                 cout << "Comando " << comando<< ": " << e.what() <<endl;
             }
         }
@@ -702,10 +615,9 @@ class INTERFACE{
         //Executa comando para procurar o elemento maximo da lista
         void find_max(){
             try{
-                int aux;
-                int res = lista->procuraElementoMaximo();
+                int res = lista->procuraItem();
                 cout << "Max Item " << lista->obterMaximo() << " na posicao " << res <<endl;                
-            }catch(ERRLIST e){ //Caso a lista esteja vazia
+            }catch(ERRLIST e){ //Trata o erro caso a lista esteja vazia
                 cout << "Comando " << comando<< ": " << e.what() <<endl;
             }
         }
@@ -718,18 +630,19 @@ class INTERFACE{
                 if(argumentos != " "){
                     istringstream arg(argumentos);
                     while(arg >> aux){
-                        res = lista->removerNaPosicao(aux);
+                        res = lista->remover(aux);
                     } 
                 } else{
                     cout << "Comando " << comando<< ": Posicao invalida!"<<endl;
                 }
-            } catch(ERRARG & e){
+            } catch(ERRARG & e){ //Trata o erro caso as posições sejam invalidas
                 cout << "Comando " << comando<< ": " << e.what() <<endl;
-            } catch(ERRLIST & e){
+            } catch(ERRLIST & e){ //Trata o erro caso a lista esteja vazia
                 cout << "Comando " << comando<< ": " << e.what() <<endl;
             }
         }
 
+        //Executa o comando que inverte os elementos entre as posições recebidas
         void invert_range(){
             try{
                 int pos1, pos2;
@@ -742,20 +655,22 @@ class INTERFACE{
                 } else{
                     cout << "Comando " << comando<< ": Posicao invalida!"<<endl;
                 }
-            } catch(ERRARG & e){
+            } catch(ERRARG & e){ //Trata o erro caso as posições sejam inválidas
                 cout << "Comando " << comando<< ": " << e.what() <<endl;
-            } catch(ERRLIST & e){
+            } catch(ERRLIST & e){ //Trata o erro caso a lista esteja vazia
                 cout << "Comando " << comando<< ": " << e.what() <<endl;
             }
         }
 
     public:
+        //Constroi a interface
         INTERFACE(){
-            lista = new GESTOR_LISTA();
+            lista = new LISTA();
             this->comando ="";
             this->argumentos="";
         }
 
+        //Destroi a interface
         ~INTERFACE(){
             delete(lista);
             lista=nullptr;
@@ -763,17 +678,18 @@ class INTERFACE{
             this->argumentos="";
         }
 
+        //Atualiza o valor de comando
         void inserirComando(string comando){
             this->comando = comando;
         }
 
+        //Atualiza o valor de argumentos
         void inserirArgumentos(string argumentos){
             this->argumentos=argumentos;
         }
 
         //Executa o comando respectivo
         void executaComando(){
-
             if(comando == "insert_0"){
                 insert_0();
             } else if(comando == "insert_end"){
@@ -801,7 +717,7 @@ class INTERFACE{
             } else if(comando == "invert_range"){
                 invert_range();
             } else{
-                cout << "Comando não suportado!" <<endl;
+                cout << "Comando não suportado!" <<endl; // Caso o comando não seja válido
             }
         }
 };
