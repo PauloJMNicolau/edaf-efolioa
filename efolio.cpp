@@ -728,7 +728,7 @@ int main(){
     string linha;
     INTERFACE *consola = new INTERFACE();
 
-    /*//Código HR
+    /*/Código HR
 
     while(getline(cin,linha)){//Le a entrada CIN
         if(linha.substr(0,1)== "#" || linha ==""){
@@ -767,4 +767,3 @@ int main(){
     //Fim Cóódigo IDE*/
     return 0;
 }
-
