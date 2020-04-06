@@ -487,6 +487,7 @@ class LISTA{
 
 };
 
+
 class INTERFACE{
     private:
         LISTA* lista;
@@ -722,45 +723,44 @@ class INTERFACE{
         }
 };
 
+
 int main(){
-    /* Enter your code here. Read input from CIN or STDIN. Print output to COUT or STDOUT */
-
-
-    fstream file;
     string linha;
-    file.open("cmd.txt", ios::in);
     INTERFACE *consola = new INTERFACE();
 
     /*//Código HR
 
-    while(getline(cin,linha)){
+    while(getline(cin,linha)){//Le a entrada CIN
         if(linha.substr(0,1)== "#" || linha ==""){
-            continue;
+            continue;//Verifica se é uma linha vazia ou comentada e ignora
         }
-        int pos = linha.find_first_of(" ", 0);
-        consola->inserirComando(linha.substr(0,pos));
-        pos = linha.find_first_not_of(" ",pos);
+        int pos = linha.find_first_of(" ", 0);//Procura o primeiro espaço para verificar onde termina o nome do comando
+        consola->inserirComando(linha.substr(0,pos)); //Insere o nome do comando na interface
+        pos = linha.find_first_not_of(" ",pos);//Procura o ultimo espaço após a posição anterior para verificar onde começa os argumentos
         if(pos!=-1){
-            consola->inserirArgumentos(linha.substr(pos,linha.size()));
+            consola->inserirArgumentos(linha.substr(pos,linha.size())); // Se a posição for válida copia os argumentos para a interface
         }
-        consola->executaComando();
+        consola->executaComando(); //Executa o comando
     }
 
     //Fim Codigo HR */
 
     
     //Código IDE
-    while(getline(file,linha)){
+
+    fstream file;
+    file.open("cmd.txt", ios::in); 
+    while(getline(file,linha)){ //Lê o ficheiro até ao final
         if(linha.substr(0,1)== "#" || linha ==""){
-            continue;
+            continue;//Verifica se é uma linha vazia ou comentada e ignora
         }
-        int pos = linha.find_first_of(" ", 0);
-        consola->inserirComando(linha.substr(0,pos));
-        pos = linha.find_first_not_of(" ",pos);
+        int pos = linha.find_first_of(" ", 0);//Procura o primeiro espaço para verificar onde termina o nome do comando
+        consola->inserirComando(linha.substr(0,pos)); //Insere o nome do comando na interface
+        pos = linha.find_first_not_of(" ",pos);//Procura o ultimo espaço após a posição anterior para verificar onde começa os argumentos
         if(pos!=-1){
-            consola->inserirArgumentos(linha.substr(pos,linha.size()));
+            consola->inserirArgumentos(linha.substr(pos,linha.size())); // Se a posição for válida copia os argumentos para a interface
         }
-        consola->executaComando();
+        consola->executaComando(); //Executa o comando
     }
     file.close();
 
