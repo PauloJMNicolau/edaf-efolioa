@@ -36,8 +36,8 @@ class NO_LISTA{
 
         //Construtor por Copia de um Nó da Lista
         NO_LISTA<T>(NO_LISTA<T> & no){
-            this->elemento=no->obterElemento();
-            this->proximo=no->obterProximo();
+            this->elemento=no->elemento;
+            this->proximo=no->proximo;
         }
 
         //Destroi um o nó
@@ -82,8 +82,10 @@ class LISTA{
         int maximo; //Maior Valor na lista
 
         //Incrementa Tamanho da Lista
-        void incrementaLista(){
+        void incrementaLista(int valor){
             tamanho++;
+            if(valor>maximo)
+                maximo=valor;//Atualiza valor Maximo da lista
         }
 
         //Decrementa Tamanho da Lista
@@ -182,17 +184,14 @@ class LISTA{
             //Se Lista Vazia
             if(cauda==nullptr){
                 cauda=novo;
-                maximo= valor;//Atualiza valor Maximo da lista
-                incrementaLista();
+                incrementaLista(valor);
                 return true;
             }
             //Se não estiver Vazia
             else{
                 novo->atualizaProximo(cauda->obterProximo());
                 cauda->atualizaProximo(novo);
-                if(valor>maximo)
-                    maximo=valor;//Atualiza valor Maximo da lista
-                incrementaLista();
+                incrementaLista(valor);
                 return true;
             }
         }
@@ -203,17 +202,14 @@ class LISTA{
             //Se Lista Vazia
             if(cauda==nullptr){
                 cauda=novo;
-                maximo= valor;//Atualiza valor Maximo da lista
-                incrementaLista();
+                incrementaLista(valor);
                 return true;
             }
             //Se não estiver Vazia
             else{
                 novo->atualizaProximo(cauda->obterProximo());
                 cauda->atualizaProximo(novo);
-                incrementaLista();
-                if(valor>maximo)
-                    maximo=valor;//Atualiza valor Maximo da lista
+                incrementaLista(valor);
                 cauda=novo;
                 return true;
             }
@@ -230,7 +226,7 @@ class LISTA{
         //Destroi Lista
         ~LISTA(){
             if(tamanho!=0){
-                while(!listaVazia()){
+                while(tamanho!=0){
                     removerCauda();
                 }
             }
@@ -242,8 +238,7 @@ class LISTA{
             //Se Lista Vazia
             if(cauda==nullptr){
                 cauda=novo;
-                maximo=valor;//Atualiza valor Maximo da lista
-                incrementaLista();
+                incrementaLista(valor);
                 return true;
             }
             // Verifica se a posição fornecida é a primeira ou a ultima
@@ -258,9 +253,7 @@ class LISTA{
                 NO_LISTA<int> * temp=procuraAnteriorPosicao(pos);
                 novo->atualizaProximo(temp->obterProximo());
                 temp->atualizaProximo(novo);
-                incrementaLista();
-                if(valor>maximo)
-                    maximo=valor;//Atualiza valor Maximo da lista
+                incrementaLista(valor);
                 return true;
             }
         }
@@ -329,11 +322,6 @@ class LISTA{
             } catch(ERRLIST & e){
                 throw e;
             }           
-        }
-
-        //Verifica se lista está vazia
-        const bool listaVazia(){
-            return tamanho==0;
         }
 
         //Retorna a posição do primeiro elemento igual ao valor fornecido
@@ -451,7 +439,7 @@ class LISTA{
                 if(tamanho==0){
                     throw ERRLIST(); //Erro Lista Vazia
                 }
-                while(!listaVazia()){
+                while(tamanho!=0){
                     removerCauda();
                 }
                 return true;
@@ -503,7 +491,6 @@ class INTERFACE{
             } else{
                 cout << "Comando " << comando<< ": Não existem valores a introduzir!"<<endl;
             }
-            
         }
 
         //Executar Comando Inserir no Inicio

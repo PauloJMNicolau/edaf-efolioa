@@ -6,7 +6,7 @@ print
 delete_pos 8
 print
 
-invert_range    0 1
+invert_range    1 2
 print
 
 
